@@ -1,0 +1,16 @@
+services:
+  api:
+    build: .
+    env_file: .env
+    ports: ["8000:8000"]
+    volumes: ["kinshield-data:/data"]
+    restart: unless-stopped
+  worker:
+    build: .
+    env_file: .env
+    command: ["python", "-m", "kinshield.worker"]
+    volumes: ["kinshield-data:/data"]
+    restart: unless-stopped
+    depends_on: [api]
+volumes:
+  kinshield-data:
