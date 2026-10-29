@@ -1,0 +1,22 @@
+#cloud-config
+# Paste into the VM's "User data" field after filling in the three secret lines. Do not commit a filled-in copy.
+write_files:
+  - path: /opt/kinshield.env
+    permissions: "0600"
+    content: |
+      NEBIUS_API_KEY=__NEBIUS_API_KEY__
+      TELEGRAM_BOT_TOKEN=__TELEGRAM_BOT_TOKEN__
+      TELEGRAM_BOT_USERNAME=kinshieldbot
+      TELEGRAM_DEMO_CHAT_ID=__TELEGRAM_DEMO_CHAT_ID__
+      KS_MODEL_FAST=nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B
+      KS_MODEL_MAIN=nvidia/nemotron-3-super-120b-a12b
+      KS_MODEL_DEEP=nvidia/Nemotron-3-Ultra-550b-a55b
+      KS_MODEL_VISION=nvidia/Nemotron-3.5-Super-VL
+      KINSHIELD_SECRET=__RANDOM_SECRET__
+      KINSHIELD_DEMO_MODE=1
+      KINSHIELD_WORKSPACE_TTL_DAYS=7
+      KINSHIELD_MODEL_CALLS_PER_HOUR=60
+      KINSHIELD_ALLOW_VISION=1
+runcmd:
+  - [bash, -c, "apt-get update && apt-get install -y git curl"]
+  - [bash, -c, "git clone --depth 1 https://github.com/gayatrisy/kinshield.git /opt/kinshield && bash /opt/kinshield/deploy/vm-setup.sh > /var/log/kinshield-setup.log 2>&1"]

@@ -6,3 +6,5 @@ frontend/dist/
 __pycache__/
 *.pyc
 .pytest_cache/
+deploy/cloud-init.yaml
+deploy/.env

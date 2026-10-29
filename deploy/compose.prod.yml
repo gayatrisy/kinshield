@@ -1,0 +1,28 @@
+# Production on one VM: KinShield API + worker behind Caddy (automatic https).
+# Run: DOMAIN=<your domain> docker compose -f deploy/compose.prod.yml up -d --build
+services:
+  api:
+    build: ..
+    env_file: ../.env
+    environment: ["KINSHIELD_EMBEDDED_WORKER=0"]
+    volumes: ["kinshield-data:/data"]
+    restart: unless-stopped
+  worker:
+    build: ..
+    env_file: ../.env
+    environment: ["KINSHIELD_EMBEDDED_WORKER=0"]
+    command: ["python", "-m", "kinshield.worker"]
+    volumes: ["kinshield-data:/data"]
+    restart: unless-stopped
+    depends_on: [api]
+  caddy:
+    image: caddy:2.8
+    ports: ["80:80", "443:443"]
+    environment: ["DOMAIN=${DOMAIN}"]
+    volumes: ["./Caddyfile:/etc/caddy/Caddyfile:ro", "caddy-data:/data", "caddy-config:/config"]
+    restart: unless-stopped
+    depends_on: [api]
+volumes:
+  kinshield-data:
+  caddy-data:
+  caddy-config:

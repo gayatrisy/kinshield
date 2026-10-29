@@ -17,7 +17,7 @@ When a parent comes home from hospital, the family gets a discharge summary that
 
 ## Try it
 
-**Hosted demo:** `<DEMO URL>` → *Start the demo*. You get a private workspace with Ramesh, 74, an invented patient. Workspaces are isolated from each other and deleted 7 days after last use. No login needed.
+**Hosted demo:** `<DEMO URL>` → *Start the demo*. On a phone, use *Install* (Android) or *Share → Add to Home Screen* (iPhone) to use it like an app. You get a private workspace with Ramesh, 74, an invented patient. Workspaces are isolated from each other and deleted 7 days after last use. No login needed.
 
 Two-minute path: **Documents → Read the PDF → tick each "Matches the document" → Confirm → Decisions → Medicines** (see the Clopidogrel label passages) **→ Make a reminder due now → Parent's screen** (leave it unanswered for 2 minutes; the alert goes to the demo Telegram channel, or to your own chat if you link it in Settings) **→ Visit brief**.
 
@@ -44,6 +44,13 @@ cp .env.example .env          # add NEBIUS_API_KEY (and Telegram values)
 docker compose up --build -d  # web app + API on :8000, worker alongside
 open http://localhost:8000
 ```
+
+### Deploy on a Nebius AI Cloud VM (public https)
+
+1. Create an Ubuntu 22.04/24.04 VM with a public IP; allow inbound TCP 80 and 443.
+2. Paste `deploy/cloud-init.template.yaml` into *User data*, with your keys filled in.
+3. After about 5 minutes the app is at `https://<ip-with-dashes>.sslip.io` (see `/opt/kinshield-url.txt` on the VM). Caddy gets the certificate automatically.
+4. To update later: `sudo bash /opt/kinshield/deploy/update.sh`.
 
 Check your setup (model IDs, JSON replies, OCR, RxNorm, openFDA, Telegram):
 
