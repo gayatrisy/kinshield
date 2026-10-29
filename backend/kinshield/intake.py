@@ -15,6 +15,8 @@ from .redact import Redactor
 MED_FIELDS = ["name", "strength", "form", "dose", "frequency", "timing", "duration", "instructions", "action"]
 ALWAYS_CONFIRM = {"name", "strength", "dose"}
 ACTIONS = {"start", "continue", "change", "stop", "unclear"}
+MED_LINE = re.compile(r"(?i)\b(tab|tabs|tablet|cap|caps|capsule|syp|syrup|inj|injection|drops?)\b\.?\s+[A-Za-z]"
+                      r"|\b\d+(\.\d+)?\s?(mg|mcg|ml|iu)\b")
 
 EXTRACT_SYSTEM = """You read hospital discharge summaries and prescriptions and turn them into structured data.
 Identifiers were replaced with placeholders like [PATIENT] or [ID]; never try to guess them.
@@ -94,9 +96,9 @@ def extract(conn: sqlite3.Connection, doc_id: int) -> int:
         raise ValueError("No readable text on this document. Try a clearer photo or use the vision fallback.")
     by_label = {f"L{l['id']}": l for l in lines}
     body = "\n".join(f"L{l['id']}: {l['redacted_text']}" for l in lines)
-    model = settings.model_fast if len(body) < 6000 else settings.model_main
-    data, run_id = llm.chat_json(conn, "extract_document", model, EXTRACT_SYSTEM,
-                                 "Document text (page order):\n" + body, max_tokens=6000)
+    # Super: in live tests on the sample discharge, Nano missed one of seven medicines; Super listed all seven.
+    data, run_id = llm.chat_json(conn, "extract_document", settings.model_main, EXTRACT_SYSTEM,
+                                 "Document text (page order):\n" + body, max_tokens=12000)
     return _store_extraction(conn, doc_id, data, run_id, by_label)
 
 
@@ -162,6 +164,20 @@ def _store_extraction(conn: sqlite3.Connection, doc_id: int, data: dict[str, Any
         for i, o in enumerate(data.get("other_instructions") or []):
             src = [str(s) for s in (o.get("source_lines") or [])]
             add("instruction", i, "text", o.get("text"), src)
+        # Lines that look like a medicine instruction but that no extracted item cites: flag them for the caregiver.
+        cited = set()
+        for r in conn.execute("SELECT source_line_ids FROM extracted_items WHERE extraction_id=?", (ext_id,)):
+            cited.update(json.loads(r["source_line_ids"]))
+        missed = 0
+        for label, ln in by_label.items():
+            if ln["id"] in cited or not MED_LINE.search(ln["redacted_text"]):
+                continue
+            conn.execute(
+                "INSERT INTO extracted_items (extraction_id, group_kind, group_index, field, value, source_line_ids, "
+                "uncertain, uncertain_reason, requires_confirm, caregiver_value) VALUES (?,?,?,?,?,?,1,?,1,?)",
+                (ext_id, "possible_missed", missed, "text", ln["redacted_text"], json.dumps([ln["id"]]),
+                 "looks like a medicine but was not listed; add it by hand if needed", ln["redacted_text"]))
+            missed += 1
         conn.execute("UPDATE documents SET status='extracted' WHERE id=?", (doc_id,))
         db.event(conn, "document_extracted", f"Read document #{doc_id}: "
                  f"{len(data.get('medications') or [])} medication entries awaiting confirmation",
@@ -191,7 +207,7 @@ def vision_fallback(conn: sqlite3.Connection, ws_dir: Path, doc_id: int, page: i
             {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64}"}},
         ]},
     ]
-    text, run_id = llm.chat(conn, "vision_transcribe", settings.model_vision, messages, max_tokens=4000)
+    text, run_id = llm.chat(conn, "vision_transcribe", settings.model_vision, messages, max_tokens=8000)
     text = llm._THINK.sub("", text)
     with db.tx(conn):
         conn.execute("DELETE FROM ocr_lines WHERE document_id=? AND page=?", (doc_id, page))

@@ -129,7 +129,7 @@ export type Normalization = {
 };
 
 export type Group = {
-  kind: "medication" | "allergy" | "follow_up" | "instruction";
+  kind: "medication" | "allergy" | "follow_up" | "instruction" | "possible_missed";
   index: number;
   items: Item[];
   suggested_times?: string[];

@@ -68,7 +68,7 @@ def review(conn: sqlite3.Connection, med_id: int) -> list[int]:
                 data, _ = llm.chat_json(
                     conn, "label_evidence", settings.model_deep, EXPLAIN_SYSTEM,
                     f"Medicine with this label: {ing}\nOther medicine the patient takes: {o_ing}\n"
-                    f"Label section: {section}\nPassage: {passage}", max_tokens=1500)
+                    f"Label section: {section}\nPassage: {passage}", max_tokens=6000)
                 explanation = str(data.get("explanation") or "")[:600] or None
                 question = str(data.get("question") or "")[:300] or None
             except (llm.LLMError, ValueError, AttributeError):

@@ -16,13 +16,14 @@ const LABELS: Record<string, string> = {
   reaction: "Reaction",
   what: "Follow-up",
   when: "When",
-  text: "Instruction",
+  text: "Text on the page",
 };
 const MED_ORDER = ["name", "strength", "dose", "frequency", "timing", "form", "duration", "instructions"];
 const KIND_TITLE: Record<string, string> = {
   allergy: "Allergy",
   follow_up: "Follow-up",
   instruction: "Other instruction",
+  possible_missed: "Line that may list a medicine, not read as one",
 };
 
 type GroupState = { include: boolean; times: string; ingredient: string; rxcui: string | null; source: string | null };
@@ -126,7 +127,7 @@ export default function Review({ id, go, onDone }: { id: number; go: Nav; onDone
         {must && !done && (
           <label className="chk">
             <input type="checkbox" checked={!!ok[it.id]} onChange={(e) => setOk({ ...ok, [it.id]: e.target.checked })} />
-            Matches the document
+            {g.kind === "possible_missed" ? "I've checked this line" : "Matches the document"}
           </label>
         )}
       </div>

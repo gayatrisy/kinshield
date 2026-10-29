@@ -168,3 +168,26 @@ def test_stop_needs_stop_wording():
     dose = db.one(conn.execute("SELECT * FROM extracted_items WHERE extraction_id=? AND field='dose'", (ext,)))
     assert dose["uncertain"] == 1  # "1 tablet" is not in the cited line
     conn.close()
+
+
+def test_uncited_medicine_line_is_flagged():
+    """Live Nano once skipped 'Cap Omeprazole 20 mg'; a line like that must be flagged, not lost."""
+    from kinshield import demo, intake
+    conn = db.open_workspace("unit-missed")
+    demo.seed(conn, "unit-missed")
+    doc = conn.execute("INSERT INTO documents (person_id, file_path, original_name, kind, uploaded_at) "
+                       "VALUES (2,'x','x','t','t')").lastrowid
+    ids = {}
+    for i, t in enumerate(["Tab Clopidogrel 75 mg 1-0-0", "Cap Omeprazole 20 mg 1-0-0", "Walk daily"], 1):
+        ids[i] = conn.execute("INSERT INTO ocr_lines (document_id, page, line_no, text, bbox, source, redacted_text) "
+                              "VALUES (?,1,?,?,'[0,0,1,1]','ocr',?)", (doc, i, t, t)).lastrowid
+    by_label = {f"L{v}": {"id": v, "redacted_text": t} for v, t in
+                zip(ids.values(), ["Tab Clopidogrel 75 mg 1-0-0", "Cap Omeprazole 20 mg 1-0-0", "Walk daily"])}
+    data = {"medications": [{"name": "Clopidogrel", "strength": "75 mg", "dose": "1-0-0", "action": "start",
+                             "source_lines": [f"L{ids[1]}"]}]}
+    run = conn.execute("INSERT INTO model_runs (task, model_id, redacted_prompt, created_at) VALUES ('t','m','p','t')").lastrowid
+    ext = intake._store_extraction(conn, doc, data, run, by_label)
+    flagged = db.rows(conn.execute("SELECT * FROM extracted_items WHERE extraction_id=? AND group_kind='possible_missed'", (ext,)))
+    assert [f["value"] for f in flagged] == ["Cap Omeprazole 20 mg 1-0-0"]
+    assert flagged[0]["requires_confirm"] == 1
+    conn.close()

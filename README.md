@@ -30,7 +30,7 @@ All inference is a runtime call to the Token Factory OpenAI-compatible API (`bac
 | Turn redacted document text into structured medicines with line citations | `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` (Super for long documents) | Fast and cheap; the job is careful copying, not reasoning |
 | Plain-English notes on plan differences, answers in *Ask KinShield*, the visit brief | `nvidia/nemotron-3-super-120b-a12b` | Good instruction following for cited JSON output |
 | Explain an openFDA label passage and draft a clinician question | `nvidia/Nemotron-3-Ultra-550b-a55b` | Long, dense label text; rare calls, so the cost stays low |
-| Read a page image when OCR fails (opt-in, identifiers masked first) | `nvidia/Nemotron-3-Nano-Omni` | Vision input |
+| Read a page image when OCR fails (opt-in, identifiers masked first) | `nvidia/Nemotron-3.5-Super-VL` | Vision input |
 
 What Token Factory made easier: one OpenAI-compatible endpoint for four Nemotron sizes, so routing a task to a bigger or smaller model is a one-line config change (`KS_MODEL_*` in `.env`), and the per-token pricing let us show the real cost of each workflow in the app.
 
@@ -68,7 +68,7 @@ cd ../backend && pytest -q                          # tests use fake model, drug
 Browser (caregiver + parent screens, React)
    │
 FastAPI ── per-workspace SQLite + uploads (owner's disk)
-   │   ├─ local OCR + redaction ──► Nebius Token Factory (Nemotron Nano / Super / Ultra / Omni)
+   │   ├─ local OCR + redaction ──► Nebius Token Factory (Nemotron Nano / Super / Ultra / Super-VL)
    │   ├─ RxNorm (names) + openFDA (labels)
 Worker ── reminders, escalation, Telegram "Seen" taps ──► Telegram Bot API ──► caregiver's phone
 ```

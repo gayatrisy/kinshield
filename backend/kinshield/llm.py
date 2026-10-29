@@ -39,12 +39,15 @@ def _openai_backend(model: str, messages: list[dict[str, Any]], max_tokens: int,
         raise LLMError("NEBIUS_API_KEY is not set")
     from openai import OpenAI
 
-    client = OpenAI(base_url=settings.nebius_base_url, api_key=settings.nebius_api_key, timeout=120)
+    client = OpenAI(base_url=settings.nebius_base_url, api_key=settings.nebius_api_key, timeout=240)
     resp = client.chat.completions.create(
         model=model, messages=messages, max_tokens=max_tokens, temperature=temperature
     )
-    msg = resp.choices[0].message
+    choice = resp.choices[0]
+    msg = choice.message
     text = msg.content or ""
+    if not text.strip() and choice.finish_reason == "length":
+        raise LLMError("the model used its whole token budget reasoning and returned no answer")
     usage = resp.usage
     return Completion(
         text=text,

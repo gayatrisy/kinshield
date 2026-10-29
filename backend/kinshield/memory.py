@@ -90,7 +90,7 @@ def ask(conn: sqlite3.Connection, question: str) -> dict[str, Any]:
     recs = records(conn)
     payload = json.dumps(recs, ensure_ascii=False)
     data, run_id = llm.chat_json(conn, "ask", settings.model_main, ASK_SYSTEM,
-                                 f"Records:\n{payload}\n\nCaregiver's question: {question[:500]}", max_tokens=2000)
+                                 f"Records:\n{payload}\n\nCaregiver's question: {question[:500]}", max_tokens=6000)
     answer = check_cites(data.get("answer", []) if isinstance(data, dict) else [], set(recs))
     dropped = len(data.get("answer", []) if isinstance(data, dict) else []) - len(answer)
     if not answer:

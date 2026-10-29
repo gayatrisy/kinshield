@@ -232,8 +232,8 @@ def _write_notes(conn: sqlite3.Connection, finding_ids: list[int]) -> None:
                         "document": {k: p.get(k) for k in ("name", "strength", "dose", "frequency", "action")} if p else None,
                         "current_list": {k: c.get(k) for k in ("name_as_written", "strength", "dose", "frequency")} if c else None})
     try:
-        data, _ = llm.chat_json(conn, "reconciliation_notes", settings.model_main, NOTES_SYSTEM,
-                                json.dumps(compact, ensure_ascii=False), max_tokens=2000)
+        data, _ = llm.chat_json(conn, "reconciliation_notes", settings.model_fast, NOTES_SYSTEM,
+                                json.dumps(compact, ensure_ascii=False), max_tokens=6000)
     except (llm.LLMError, ValueError):
         return  # template notes stay in place
     valid = set(finding_ids)

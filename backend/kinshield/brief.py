@@ -34,7 +34,7 @@ Return JSON: {"summary": [{"text": "...", "cites": ["med:3"]}], "questions": [{"
 def build(conn: sqlite3.Connection, ws_dir: Path, days: int = 30) -> dict[str, Any]:
     recs = memory.records(conn, days)
     data, run_id = llm.chat_json(conn, "visit_brief", settings.model_main, BRIEF_SYSTEM,
-                                 "Records:\n" + json.dumps(recs, ensure_ascii=False), max_tokens=3000)
+                                 "Records:\n" + json.dumps(recs, ensure_ascii=False), max_tokens=8000)
     data = data if isinstance(data, dict) else {}
     valid = set(recs)
     summary = memory.check_cites(data.get("summary", []), valid)
