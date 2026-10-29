@@ -10,6 +10,28 @@ import pytesseract
 from PIL import Image, ImageOps
 
 RENDER_DPI = 200
+
+
+class OCRUnavailable(RuntimeError):
+    pass
+
+
+def _find_tesseract() -> None:
+    """Use Tesseract from PATH, or from its usual Windows install folder."""
+    import os
+    import shutil
+
+    if shutil.which("tesseract"):
+        return
+    for candidate in (r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+                      r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+                      os.path.expandvars(r"%LOCALAPPDATA%\Programs\Tesseract-OCR\tesseract.exe")):
+        if os.path.exists(candidate):
+            pytesseract.pytesseract.tesseract_cmd = candidate
+            return
+
+
+_find_tesseract()
 MIN_TEXT_CHARS = 25  # a page with less text-layer text than this is treated as scanned
 
 
@@ -32,7 +54,11 @@ class ReadResult:
 def _ocr_image(img: Image.Image, page: int) -> list[Line]:
     img = ImageOps.exif_transpose(img).convert("L")
     w, h = img.size
-    data = pytesseract.image_to_data(img, output_type=pytesseract.Output.DICT, config="--psm 4")
+    try:
+        data = pytesseract.image_to_data(img, output_type=pytesseract.Output.DICT, config="--psm 4")
+    except pytesseract.TesseractNotFoundError as exc:
+        raise OCRUnavailable("Local OCR (Tesseract) is not installed on this server, so photos and scanned pages "
+                             "can't be read. PDFs with a text layer still work.") from exc
     groups: dict[tuple[int, int, int], list[int]] = {}
     for i, word in enumerate(data["text"]):
         if not word.strip():

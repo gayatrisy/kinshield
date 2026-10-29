@@ -15,7 +15,7 @@ from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import brief, careplan, db, demo, evidence, intake, llm, memory, notify, reconcile, worker
+from . import brief, careplan, db, demo, evidence, intake, llm, memory, notify, ocr, reconcile, worker
 from .config import settings
 
 app = FastAPI(title="KinShield", version="1.0.0")
@@ -194,7 +194,11 @@ def dashboard(ws: Workspace = Depends(get_ws)) -> dict[str, Any]:
 # ---------- documents & intake ----------
 
 def _process(ws: Workspace, doc_id: int) -> dict[str, Any]:
-    intake.ingest(ws.conn, ws.dir, doc_id)
+    try:
+        intake.ingest(ws.conn, ws.dir, doc_id)
+    except ocr.OCRUnavailable as exc:
+        ws.conn.execute("UPDATE documents SET status='failed' WHERE id=?", (doc_id,))
+        raise HTTPException(503, str(exc)) from exc
     try:
         ext_id = intake.extract(ws.conn, doc_id)
     except (llm.LLMError, ValueError) as exc:

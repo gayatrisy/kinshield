@@ -6,13 +6,32 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 
+ROOT = Path(__file__).resolve().parent.parent.parent
+
+
+def _load_dotenv(path: Path) -> None:
+    """Read KEY=value lines from .env into the environment (real environment variables win)."""
+    if not path.exists():
+        return
+    for raw in path.read_text(encoding="utf-8-sig").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+if not os.environ.get("KINSHIELD_SKIP_DOTENV"):
+    _load_dotenv(ROOT / ".env")
+
+
 def _env(name: str, default: str = "") -> str:
     return os.environ.get(name, default).strip()
 
 
 @dataclass(frozen=True)
 class Settings:
-    data_dir: Path = field(default_factory=lambda: Path(_env("KINSHIELD_DATA_DIR", "./data")).resolve())
+    data_dir: Path = field(default_factory=lambda: Path(_env("KINSHIELD_DATA_DIR") or str(ROOT / "data")).resolve())
 
     # Nebius Token Factory (OpenAI-compatible)
     nebius_api_key: str = field(default_factory=lambda: _env("NEBIUS_API_KEY"))

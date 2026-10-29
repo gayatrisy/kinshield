@@ -8,6 +8,7 @@ import tempfile
 from pathlib import Path
 
 _TMP = tempfile.mkdtemp(prefix="kinshield-test-")
+os.environ["KINSHIELD_SKIP_DOTENV"] = "1"
 os.environ["KINSHIELD_DATA_DIR"] = _TMP
 os.environ["KINSHIELD_SECRET"] = "test-secret"
 os.environ["TELEGRAM_BOT_TOKEN"] = "TEST"
