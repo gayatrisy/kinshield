@@ -554,6 +554,15 @@ _static = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
 if _static.exists():
     app.mount("/assets", StaticFiles(directory=_static / "assets"), name="assets")
 
+    @app.get("/manifest.webmanifest", include_in_schema=False)
+    def manifest() -> FileResponse:
+        return FileResponse(_static / "manifest.webmanifest", media_type="application/manifest+json")
+
+    @app.get("/sw.js", include_in_schema=False)
+    def service_worker() -> FileResponse:
+        return FileResponse(_static / "sw.js", media_type="text/javascript",
+                            headers={"Cache-Control": "no-cache", "Service-Worker-Allowed": "/"})
+
     @app.get("/{path:path}", include_in_schema=False)
     def spa(path: str) -> FileResponse:
         target = _static / path

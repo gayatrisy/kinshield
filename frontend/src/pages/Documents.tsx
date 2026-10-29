@@ -55,20 +55,39 @@ export default function Documents({ go }: { go: Nav }) {
 
       <div className="grid-2">
         <section className="panel stack">
-          <h2>Upload</h2>
-          <label className="field">
-            <span>PDF, JPG, PNG or WEBP, up to 15 MB</span>
-            <input
-              type="file"
-              accept=".pdf,.png,.jpg,.jpeg,.webp"
-              disabled={busy}
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) process(() => api.upload("/api/documents", f));
-                e.target.value = "";
-              }}
-            />
-          </label>
+          <h2>Add a document</h2>
+          <div className="row">
+            <label className={`btn ${busy ? "disabled" : ""}`}>
+              Take a photo
+              <input
+                className="visually-hidden"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                disabled={busy}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) process(() => api.upload("/api/documents", f));
+                  e.target.value = "";
+                }}
+              />
+            </label>
+            <label className={`btn quiet ${busy ? "disabled" : ""}`}>
+              Choose a file
+              <input
+                className="visually-hidden"
+                type="file"
+                accept=".pdf,.png,.jpg,.jpeg,.webp"
+                disabled={busy}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) process(() => api.upload("/api/documents", f));
+                  e.target.value = "";
+                }}
+              />
+            </label>
+          </div>
+          <p className="tiny">PDF or photo, up to 15 MB. For a photo, lay the page flat in good light and fill the frame.</p>
           <p className="tiny">Please use synthetic or already-redacted documents in the public demo.</p>
         </section>
         <section className="panel stack">

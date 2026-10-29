@@ -1,4 +1,5 @@
 import { api, Session } from "../api";
+import InstallCard from "../InstallCard";
 
 export default function Settings({ session, onReset }: { session: Session; onReset: () => void }) {
   const t = session.telegram;
@@ -8,6 +9,11 @@ export default function Settings({ session, onReset }: { session: Session; onRes
         <h1>Settings</h1>
         <p className="muted">Where alerts go, which models are used, and your data.</p>
       </div>
+
+      <section className="stack">
+        <h2>On your phone</h2>
+        <InstallCard />
+      </section>
 
       <section className="panel stack">
         <h2>Telegram alerts</h2>

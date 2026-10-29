@@ -11,6 +11,8 @@ import Brief from "./pages/Brief";
 import Activity from "./pages/Activity";
 import Parent from "./pages/Parent";
 import Settings from "./pages/Settings";
+import More from "./pages/More";
+import InstallCard from "./InstallCard";
 
 export type Nav = (to: string) => void;
 
@@ -83,6 +85,20 @@ export default function App() {
     ["settings", "Settings"],
   ];
 
+  const I = (d: string) => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d={d} />
+    </svg>
+  );
+  const tabs: [string, string, JSX.Element, number?][] = [
+    ["today", "Today", I("M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z")],
+    ["documents", "Upload", I("M12 16V4m0 0-4.5 4.5M12 4l4.5 4.5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"), pending.reviews],
+    ["decisions", "Decide", I("M9 12.5l2 2 4-4.5M12 3l7 3v5c0 5-3 8.5-7 10-4-1.5-7-5-7-10V6z"), pending.decisions],
+    ["medicines", "Medicines", I("M10.5 3.5a5 5 0 0 1 7 7l-7 7a5 5 0 0 1-7-7zM7 7l7 7")],
+    ["more", "More", I("M5 12h.01M12 12h.01M19 12h.01")],
+  ];
+  const moreActive = ["more", "ask", "brief", "activity", "settings"].includes(path ?? "");
+
   let page;
   switch (path) {
     case "documents":
@@ -109,6 +125,9 @@ export default function App() {
     case "settings":
       page = <Settings session={session} onReset={() => setSession(null)} />;
       break;
+    case "more":
+      page = <More />;
+      break;
     default:
       page = <Today go={go} session={session} />;
   }
@@ -117,8 +136,11 @@ export default function App() {
     <>
       {session.is_demo ? (
         <div className="demo-banner">
-          Demo workspace with a synthetic patient. Everything here is invented and private to this browser; it is
-          deleted 7 days after your last visit.
+          <span className="long">
+            Demo workspace with a synthetic patient. Everything here is invented and private to this browser; it is
+            deleted 7 days after your last visit.
+          </span>
+          <span className="short">Demo with an invented patient. Private to this browser.</span>
         </div>
       ) : null}
       <div className="shell">
@@ -138,8 +160,25 @@ export default function App() {
             Runs on NVIDIA Nemotron via Nebius Token Factory. Not medical advice.
           </div>
         </aside>
-        <main>{page}</main>
+        <main>
+          {(!path || path === "today") && <InstallCard compact />}
+          {page}
+        </main>
       </div>
+      <nav className="tabbar" aria-label="Main">
+        {tabs.map(([to, label, icon, n]) => {
+          const current = to === "more" ? moreActive : path === to || (!path && to === "today") || (to === "documents" && path === "review");
+          return (
+            <a key={to} href={`#/${to}`} aria-current={current ? "page" : undefined}>
+              <span className="tab-icon" aria-hidden="true">
+                {icon}
+                {n ? <span className="tab-badge">{n}</span> : null}
+              </span>
+              <span>{label}</span>
+            </a>
+          );
+        })}
+      </nav>
     </>
   );
 }

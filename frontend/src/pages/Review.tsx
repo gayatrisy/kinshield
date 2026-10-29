@@ -351,10 +351,10 @@ export default function Review({ id, go, onDone }: { id: number; go: Nav; onDone
                       go("/documents");
                     }}
                   >
-                    Discard this reading
+                    Discard
                   </button>
                   <button className="btn sage" disabled={busy || outstanding > 0} onClick={submit}>
-                    Confirm and compare with the plan
+                    Confirm and compare
                   </button>
                 </div>
               </div>
