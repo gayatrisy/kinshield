@@ -2,6 +2,7 @@ services:
   api:
     build: .
     env_file: .env
+    environment: ["KINSHIELD_EMBEDDED_WORKER=0"]
     ports: ["8000:8000"]
     volumes: ["kinshield-data:/data"]
     restart: unless-stopped
@@ -9,6 +10,7 @@ services:
     build: .
     env_file: .env
     command: ["python", "-m", "kinshield.worker"]
+    environment: ["KINSHIELD_EMBEDDED_WORKER=0"]
     volumes: ["kinshield-data:/data"]
     restart: unless-stopped
     depends_on: [api]

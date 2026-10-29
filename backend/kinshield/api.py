@@ -19,6 +19,16 @@ from . import brief, careplan, db, demo, evidence, intake, llm, memory, notify, 
 from .config import settings
 
 app = FastAPI(title="KinShield", version="1.0.0")
+
+
+@app.on_event("startup")
+def _embedded_worker() -> None:
+    """On single-container hosts, run the reminder worker as a thread inside the web server."""
+    import os
+    import threading
+
+    if os.environ.get("KINSHIELD_EMBEDDED_WORKER") == "1":
+        threading.Thread(target=worker.main, name="kinshield-worker", daemon=True).start()
 COOKIE = "ks_ws"
 MAX_UPLOAD = 15 * 1024 * 1024
 ALLOWED = {".pdf", ".png", ".jpg", ".jpeg", ".webp"}
