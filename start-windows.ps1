@@ -10,6 +10,17 @@ if (-not (Test-Path ".env")) {
     exit 1
 }
 
+# Check the keys without printing them
+$envText = Get-Content ".env" -Raw
+if ($envText -notmatch "(?m)^NEBIUS_API_KEY=v1\.\S{40,}") {
+    Write-Host "NEBIUS_API_KEY in .env is empty or incomplete. Paste the full key after NEBIUS_API_KEY=, save, and run again." -ForegroundColor Yellow
+    notepad ".env"
+    exit 1
+}
+Write-Host "Nebius key: found" -ForegroundColor Green
+if ($envText -match "(?m)^TELEGRAM_BOT_TOKEN=\d+:\S+") { Write-Host "Telegram bot: found" -ForegroundColor Green }
+else { Write-Host "Telegram bot token not set: alerts will be recorded but not sent." -ForegroundColor Yellow }
+
 $py = $null
 $candidates = @(@("py", "-3.12"), @("py", "-3.11"), @("py", "-3.10"), @("py", "-3"), @("python"))
 foreach ($cand in $candidates) {
