@@ -157,9 +157,9 @@ def main(out: Path) -> None:
     d1 = demo.write_discharge_pdf(out / "1-discharge-summary.pdf")
     demo.write_scanned_png(d1, out / "1-discharge-summary-photo.jpg")
     lines_pdf(out / "2-follow-up-prescription.pdf", FOLLOW_UP)
-    clinic_pdf = lines_pdf(out / ".clinic-source.pdf", CLINIC, size=A5)
-    photo_of(clinic_pdf, out / "3-clinic-prescription-photo.jpg", angle=-1.6, seed=11)
-    clinic_pdf.unlink()
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import make_clinic_photo
+    make_clinic_photo.make(out / "3-clinic-prescription-photo.jpg")
     guide(out / "0-README-demo-guide.pdf")
     for p in sorted(out.iterdir()):
         print(p.name, p.stat().st_size)
