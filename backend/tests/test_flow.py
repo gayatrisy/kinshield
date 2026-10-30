@@ -191,3 +191,14 @@ def test_uncited_medicine_line_is_flagged():
     assert [f["value"] for f in flagged] == ["Cap Omeprazole 20 mg 1-0-0"]
     assert flagged[0]["requires_confirm"] == 1
     conn.close()
+
+
+def test_header_and_link_token_work_without_cookie(client):
+    from fastapi.testclient import TestClient
+    from kinshield.api import app
+
+    token = client.post("/api/session/demo").json()["token"]
+    bare = TestClient(app)  # no cookies, like a browser blocking third-party cookies in an iframe
+    assert bare.get("/api/session", headers={"X-KinShield-Token": token}).status_code == 200
+    assert bare.get(f"/api/documents?t={token}").status_code == 200
+    assert bare.get("/api/documents").status_code == 401

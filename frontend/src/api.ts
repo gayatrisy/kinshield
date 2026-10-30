@@ -6,8 +6,32 @@ export class ApiError extends Error {
   }
 }
 
+const TOKEN_KEY = "kinshield-token";
+export function saveToken(token: string | null) {
+  try {
+    if (token) localStorage.setItem(TOKEN_KEY, token);
+    else localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    /* storage unavailable: the cookie still works on the direct link */
+  }
+}
+function readToken(): string | null {
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+/** Adds the workspace token for links the browser opens itself (page images, PDFs, export). */
+export function withToken(path: string): string {
+  const t = readToken();
+  return t ? `${path}${path.includes("?") ? "&" : "?"}t=${encodeURIComponent(t)}` : path;
+}
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const init: RequestInit = { method, credentials: "same-origin", headers: {} };
+  const tok = readToken();
+  if (tok) (init.headers as Record<string, string>)["X-KinShield-Token"] = tok;
   if (body instanceof FormData) {
     init.body = body;
   } else if (body !== undefined) {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { api, ExtractionView, Group, Item } from "../api";
+import { api, ExtractionView, Group, Item, withToken } from "../api";
 import type { Nav } from "../App";
 
 const LABELS: Record<string, string> = {
@@ -190,7 +190,7 @@ export default function Review({ id, go, onDone }: { id: number; go: Nav; onDone
             </div>
           )}
           <div className="sheet">
-            <img src={`/api/documents/${v.document.id}/pages/${page}`} alt={`Page ${page} of ${v.document.original_name}`} />
+            <img src={withToken(`/api/documents/${v.document.id}/pages/${page}`)} alt={`Page ${page} of ${v.document.original_name}`} />
             {pageLines
               .filter((l) => focus.includes(l.id) && l.source !== "vision")
               .map((l) => (

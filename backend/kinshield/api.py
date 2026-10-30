@@ -42,7 +42,8 @@ class Workspace:
 
 
 def get_ws(request: Request) -> Iterator[Workspace]:
-    token = request.cookies.get(COOKIE) or request.headers.get("X-KinShield-Token", "")
+    token = (request.headers.get("X-KinShield-Token") or request.cookies.get(COOKIE)
+             or request.query_params.get("t") or "")
     ws_id = db.resolve_token(token)
     if not ws_id:
         raise HTTPException(401, "No active workspace. Start a demo or set up KinShield.")
@@ -69,8 +70,10 @@ async def _conf(_: Request, exc: reconcile.ConfirmationError) -> JSONResponse:
 
 
 def _set_cookie(resp: Response, token: str) -> None:
-    resp.set_cookie(COOKIE, token, httponly=True, samesite="lax", max_age=settings.workspace_ttl_days * 86400,
-                    secure=settings.public_url.startswith("https"))
+    https = settings.public_url.startswith("https")
+    # SameSite=None lets the app work inside Hugging Face's page (an iframe); it requires https.
+    resp.set_cookie(COOKIE, token, httponly=True, samesite="none" if https else "lax",
+                    max_age=settings.workspace_ttl_days * 86400, secure=https)
 
 
 # ---------- session ----------

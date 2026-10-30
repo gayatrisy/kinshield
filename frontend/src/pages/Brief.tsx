@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, Cited, fmtDateTime } from "../api";
+import { api, Cited, fmtDateTime, withToken } from "../api";
 import { CitedText } from "./Ask";
 
 type BriefT = {
@@ -57,7 +57,7 @@ export default function Brief() {
         <article className="panel stack-l">
           <div className="spread">
             <span className="tiny">Prepared {fmtDateTime(b.created_at)}</span>
-            <a className="btn small quiet" href={b.pdf} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+            <a className="btn small quiet" href={withToken(b.pdf)} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
               Open the PDF
             </a>
           </div>

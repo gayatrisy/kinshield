@@ -1,4 +1,4 @@
-import { api, Session } from "../api";
+import { api, saveToken, Session, withToken } from "../api";
 import InstallCard from "../InstallCard";
 
 export default function Settings({ session, onReset }: { session: Session; onReset: () => void }) {
@@ -78,7 +78,7 @@ export default function Settings({ session, onReset }: { session: Session; onRes
           removal is pattern-based and can miss things.
         </p>
         <div className="row">
-          <a className="btn quiet" href="/api/export" style={{ textDecoration: "none" }}>
+          <a className="btn quiet" href={withToken("/api/export")} style={{ textDecoration: "none" }}>
             Export my data
           </a>
           <button
@@ -86,6 +86,7 @@ export default function Settings({ session, onReset }: { session: Session; onRes
             onClick={async () => {
               if (!confirm("Delete this workspace and everything in it? This can't be undone.")) return;
               await api.del("/api/session");
+              saveToken(null);
               onReset();
             }}
           >

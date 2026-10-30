@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { api } from "../api";
+import { api, saveToken } from "../api";
 
 export default function Start({ onReady }: { onReady: () => void }) {
   const [busy, setBusy] = useState(false);
@@ -10,7 +10,8 @@ export default function Start({ onReady }: { onReady: () => void }) {
     setBusy(true);
     setError("");
     try {
-      await fn();
+      const r = (await fn()) as { token?: string } | undefined;
+      if (r && r.token) saveToken(r.token);
       window.location.hash = "/today";
       onReady();
     } catch (e) {
