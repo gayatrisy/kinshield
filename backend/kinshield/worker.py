@@ -132,6 +132,9 @@ def tick_all() -> None:
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
+    # httpx logs full request URLs, and Telegram puts the bot token in the URL: keep those out of the logs.
+    for noisy in ("httpx", "httpcore", "openai"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
     log.info("worker started; interval %ss; demo mode %s", settings.worker_interval_s, settings.demo_mode)
     last_purge = 0.0
     while True:

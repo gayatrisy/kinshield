@@ -17,7 +17,7 @@ When a parent comes home from hospital, the family gets a discharge summary that
 
 ## Try it
 
-**Hosted demo:** `<DEMO URL>` → *Start the demo*. On a phone, use *Install* (Android) or *Share → Add to Home Screen* (iPhone) to use it like an app. You get a private workspace with Ramesh, 74, an invented patient. Workspaces are isolated from each other and deleted 7 days after last use. No login needed.
+**Hosted demo:** https://kinshield-lii3.onrender.com (free tier: the first visit after 15 idle minutes takes about a minute to wake up) → *Start the demo*. On a phone, use *Install* (Android) or *Share → Add to Home Screen* (iPhone) to use it like an app. You get a private workspace with Ramesh, 74, an invented patient. Workspaces are isolated from each other and deleted 7 days after last use. No login needed.
 
 Two-minute path: **Documents → Read the PDF → tick each "Matches the document" → Confirm → Decisions → Medicines** (see the Clopidogrel label passages) **→ Make a reminder due now → Parent's screen** (leave it unanswered for 2 minutes; the alert goes to the demo Telegram channel, or to your own chat if you link it in Settings) **→ Visit brief**.
 
